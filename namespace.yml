@@ -1,7 +1,4 @@
 apiVersion: v1
-kind: noteapp-namespace
+kind: Namespace
 metadata:
-  name: noteapp-deployment
-  labels:
-    environment:
-    project: noteapp
+  name: noteappnamespace
