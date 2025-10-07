@@ -8,6 +8,6 @@ spec:
     app: noteapp
   ports:
     - protocol: TCP
-      port: 8005
+      port: 8000
       targetPort: 8000
   type: ClusterIP
