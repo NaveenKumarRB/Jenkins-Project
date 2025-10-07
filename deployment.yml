@@ -15,7 +15,7 @@ spec:
         app: noteapp
     spec:
       containers:
-      - name: noteapp-container
-        image: naveenkumarrb/notes-app
-        ports: 8000
-        - containerPort: 8000
+        - name: noteapp-container
+          image: naveenkumarrb/notes-app
+          ports:
+            - containerPort: 8000
