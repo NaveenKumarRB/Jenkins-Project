@@ -2,16 +2,22 @@ pipeline {
     agent {
         label 'k8smaster'
     }
+
+    environment {
+        WORKSPACE_DIR = '/home/naveen/workspace/CD'
+        NAMESPACE = 'noteappnamespace'
+    }
+
     stages {
         stage('Clean CD Directory') {
             steps {
                 script {
-                    def fileCount = sh(script: "ls -A /home/naveen/workspace/CD | wc -l", returnStdout: true).trim()
+                    def fileCount = sh(script: "ls -A ${env.WORKSPACE_DIR} | wc -l", returnStdout: true).trim()
                     if (fileCount != "0") {
-                        sh 'rm -rf /home/naveen/workspace/CD/*'
-                        echo "Files deleted from /home/naveen/workspace/CD"
+                        sh "rm -rf ${env.WORKSPACE_DIR}/*"
+                        echo "Files deleted from ${env.WORKSPACE_DIR}"
                     } else {
-                        echo "No files found in /home/naveen/workspace/CD. Skipping deletion."
+                        echo "No files found in ${env.WORKSPACE_DIR}. Skipping deletion."
                     }
                 }
             }
@@ -20,23 +26,40 @@ pipeline {
         stage('Pull the infra repo') {
             steps {
                 git branch: 'main', url: 'https://github.com/NaveenKumarRB/Jenkins-Project.git'
-                dir('/home/naveen/workspace/CD') {
-                    echo "Changed working directory to /home/naveen/workspace/CD"
-                }
+                echo "Infra repo pulled into ${env.WORKSPACE_DIR}"
             }
         }
+
         stage('Create a namespace') {
             steps {
-                dir('/home/naveen/workspace/CD') {
+                dir("${env.WORKSPACE_DIR}") {
                     sh 'kubectl apply -f namespace.yml'
-                    sh 'kubectl get namespace' // assuming you meant 'svc' for services
+                    sh 'kubectl get namespace'
                 }
             }
         }
-        stage('deploy the service.yml') {
+
+        stage('Deploy service.yml') {
             steps {
-                dir('/home/naveen/workspace/CD') {
-                    sh 'kubectl apply -f service.yml --namespace=noteappnamespace'
+                dir("${env.WORKSPACE_DIR}") {
+                    sh "kubectl apply -f service.yml --namespace=${env.NAMESPACE}"
+                }
+            }
+        }
+
+        stage('Deploy deployment.yml') {
+            steps {
+                dir("${env.WORKSPACE_DIR}") {
+                    sh "kubectl apply -f deployment.yml --namespace=${env.NAMESPACE}"
+                }
+            }
+        }
+        
+        stage('Port Forwarding 8000:8000') {
+            steps {
+                dir("${env.WORKSPACE_DIR}") {
+                    // Corrected command and syntax
+                    sh 'sudo kubectl port-forward svc/noteapp-service -n noteappnamespace 8000:8000 --address=0.0.0.0 &'
                 }
             }
         }

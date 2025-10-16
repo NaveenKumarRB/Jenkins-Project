@@ -2,6 +2,7 @@ apiVersion: apps/v1
 kind: Deployment
 metadata:
   name: noteapp-deployment
+  namespace: noteappnamespace
   labels:
     app: noteapp
 spec:
@@ -16,6 +17,6 @@ spec:
     spec:
       containers:
       - name: noteapp-container
-        image: naveenkumarrb/notes-app
+        image: naveenkumarrb/notes-app:v1
         ports: 8000
         - containerPort: 8000
